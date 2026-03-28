@@ -35,6 +35,10 @@ public class Usuario implements UserDetails {
         return email;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public String getNome() {
         return nomeCompleto;
     }
