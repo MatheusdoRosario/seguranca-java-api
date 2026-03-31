@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class UsuarioService implements UserDetailsService {
 
@@ -27,6 +29,12 @@ public class UsuarioService implements UserDetailsService {
 
     @Transactional
     public Usuario cadastrar(DadosCadastroUsuario dados) {
+        Optional<Usuario> optionalUsuario = usuarioRepository.findByEmailIgnoreCaseOrNomeUsuarioIgnoreCase(dados.email(), dados.nomeUsuario());
+
+        if (optionalUsuario.isPresent()) {
+            throw new RegraDeNegocioException("Já existe uma conta cadastrada com esse email ou nome de usuário!");
+        }
+
         if (!dados.senha().equals(dados.confirmacaoSenha())) {
             throw new RegraDeNegocioException("Senha não bate com a confirmação!");
         }
