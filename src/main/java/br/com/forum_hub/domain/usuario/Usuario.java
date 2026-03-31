@@ -20,6 +20,18 @@ public class Usuario implements UserDetails {
     private String biografia;
     private String miniBiografia;
 
+    public Usuario() {
+    }
+
+    public Usuario(DadosCadastroUsuario dados, String senhaCriptografa) {
+        nomeCompleto = dados.nomeCompleto();
+        email = dados.email();
+        senha = senhaCriptografa;
+        nomeUsuario = dados.nomeUsuario();
+        biografia = dados.biografia();
+        miniBiografia = dados.miniBiografia();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
@@ -39,7 +51,7 @@ public class Usuario implements UserDetails {
         return id;
     }
 
-    public String getNome() {
+    public String getNomeCompleto() {
         return nomeCompleto;
     }
 
