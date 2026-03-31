@@ -1,5 +1,6 @@
 package br.com.forum_hub.domain.usuario;
 
+import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +27,10 @@ public class UsuarioService implements UserDetailsService {
 
     @Transactional
     public Usuario cadastrar(DadosCadastroUsuario dados) {
+        if (!dados.senha().equals(dados.confirmacaoSenha())) {
+            throw new RegraDeNegocioException("Senha não bate com a confirmação!");
+        }
+
         var senhaCriptografa = passwordEncoder.encode(dados.senha());
         var usuario = new Usuario(dados, senhaCriptografa);
         return usuarioRepository.save(usuario);
