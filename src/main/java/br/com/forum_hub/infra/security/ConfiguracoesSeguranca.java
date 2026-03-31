@@ -25,7 +25,7 @@ public class ConfiguracoesSeguranca {
         return http
                 .authorizeHttpRequests(
                         req -> {
-                            req.requestMatchers("/login", "/atualizar-token").permitAll();
+                            req.requestMatchers("/login", "/atualizar-token", "/registrar", "verificar-conta").permitAll();
                             req.anyRequest().authenticated();
                         }
                 )

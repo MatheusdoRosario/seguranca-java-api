@@ -1,7 +1,7 @@
 package br.com.forum_hub.domain.usuario;
 
+import br.com.forum_hub.infra.email.EmailService;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,9 +21,12 @@ public class UsuarioService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByEmailIgnoreCase(username)
+        return usuarioRepository.findByEmailIgnoreCaseAndVerificadoTrue(username)
                 .orElseThrow(() -> new UsernameNotFoundException("O usuário não foi encontrado!"));
     }
 
@@ -41,6 +44,20 @@ public class UsuarioService implements UserDetailsService {
 
         var senhaCriptografa = passwordEncoder.encode(dados.senha());
         var usuario = new Usuario(dados, senhaCriptografa);
+
+        emailService.enviarEmailVerificacao(usuario);
         return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void verificarEmail(String codigo) {
+        var usuario = usuarioRepository.findByToken(codigo).orElseThrow();
+        usuario.verificar();
+    }
+
+    public DadosListagemUsuario listarPorNomeUsuario(String nomeUsuario) {
+        var usuario = usuarioRepository.findByNomeUsuario(nomeUsuario)
+                .orElseThrow(() -> new RegraDeNegocioException("Usuário não encontrado!"));
+        return new DadosListagemUsuario(usuario);
     }
 }
