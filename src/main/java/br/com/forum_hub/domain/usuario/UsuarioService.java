@@ -2,6 +2,7 @@ package br.com.forum_hub.domain.usuario;
 
 import br.com.forum_hub.infra.email.EmailService;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -56,8 +57,32 @@ public class UsuarioService implements UserDetailsService {
     }
 
     public DadosListagemUsuario listarPorNomeUsuario(String nomeUsuario) {
-        var usuario = usuarioRepository.findByNomeUsuario(nomeUsuario)
+        var usuario = usuarioRepository.findByNomeUsuarioAndVerificadoTrueAndAtivoTrue(nomeUsuario)
                 .orElseThrow(() -> new RegraDeNegocioException("Usuário não encontrado!"));
         return new DadosListagemUsuario(usuario);
+    }
+
+    @Transactional
+    public Usuario editarPerfil(DadosAtualizacaoUsuario dados, Usuario logado) {
+        return logado.alterarDados(dados);
+    }
+
+    @Transactional
+    public void alterarSenha(DadosAtualizacaoSenha dados, Usuario logado) {
+        if (!passwordEncoder.matches(dados.senhaAtual(), logado.getPassword())) {
+            throw new RegraDeNegocioException("Senha atual inválida!");
+        }
+
+        if (!dados.novaSenha().equals(dados.novaSenhaConfirmacao())) {
+            throw new RegraDeNegocioException("Senha não bate com a confirmação!");
+        }
+
+        var senhaCriptografa = passwordEncoder.encode(dados.novaSenha());
+        logado.alterarSenha(senhaCriptografa);
+    }
+
+    @Transactional
+    public void desativarUsuario(Usuario logado) {
+        logado.desativar();
     }
 }
