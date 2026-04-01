@@ -7,6 +7,7 @@ import br.com.forum_hub.infra.email.EmailService;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import br.com.forum_hub.infra.security.HierarquiaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -96,7 +97,7 @@ public class UsuarioService implements UserDetailsService {
     public void desativarUsuario(Long id, Usuario logado) {
         var usuario = usuarioRepository.findById(id).orElseThrow();
         if (hierarquiaService.usuarioNaoTemPermissoes(logado, usuario, "ROLE_ADMIN")) {
-            throw new RegraDeNegocioException("Você não tem permissão realizar essa operação!");
+            throw new AccessDeniedException("Você não tem permissão realizar essa operação!");
         }
         usuario.desativar();
     }

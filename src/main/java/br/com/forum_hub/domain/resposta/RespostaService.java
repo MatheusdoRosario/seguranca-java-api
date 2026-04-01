@@ -7,6 +7,7 @@ import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import br.com.forum_hub.infra.security.HierarquiaService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public class RespostaService {
         var resposta = buscarPeloId(dados.id());
 
         if (hierarquiaService.usuarioNaoTemPermissoes(logado, resposta.getTopico().getAutor(), "ROLE_MODERADOR")){
-            throw new RegraDeNegocioException("Você não pode editar essa resposta!");
+            throw new AccessDeniedException("Você não pode editar essa resposta!");
         }
 
         return resposta.atualizarInformacoes(dados);
@@ -63,7 +64,7 @@ public class RespostaService {
         var topico = resposta.getTopico();
 
         if (hierarquiaService.usuarioNaoTemPermissoes(logado, topico.getAutor(), "ROLE_INSTRUTOR")) {
-            throw new RegraDeNegocioException("Você não pode marcar essa resposta como solução!");
+            throw new AccessDeniedException("Você não pode marcar essa resposta como solução!");
         }
 
         if (topico.getStatus() == Status.RESOLVIDO)
@@ -79,7 +80,7 @@ public class RespostaService {
         var topico = resposta.getTopico();
 
         if (hierarquiaService.usuarioNaoTemPermissoes(logado, topico.getAutor(), "ROLE_MODERADOR")){
-            throw new RegraDeNegocioException("Você não pode excluir essa resposta!");
+            throw new AccessDeniedException("Você não pode excluir essa resposta!");
         }
 
         repository.deleteById(id);

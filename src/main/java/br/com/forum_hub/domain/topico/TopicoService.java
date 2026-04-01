@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,7 +46,7 @@ public class TopicoService {
         var topico = buscarPeloId(dados.id());
 
         if (hierarquiaService.usuarioNaoTemPermissoes(logado, topico.getAutor(), "ROLE_MODERADOR")){
-            throw new RegraDeNegocioException("Você não pode editar esse tópico!");
+            throw new AccessDeniedException("Você não pode editar esse tópico!");
         }
 
         var curso = cursoService.buscarPeloId(dados.cursoId());
@@ -57,7 +58,7 @@ public class TopicoService {
         var topico = buscarPeloId(id);
 
         if (hierarquiaService.usuarioNaoTemPermissoes(logado, topico.getAutor(), "ROLE_MODERADOR")){
-            throw new RegraDeNegocioException("Você não pode excluir esse tópico!");
+            throw new AccessDeniedException("Você não pode excluir esse tópico!");
         }
 
         if (topico.getStatus() == Status.NAO_RESPONDIDO)
