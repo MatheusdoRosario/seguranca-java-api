@@ -128,4 +128,8 @@ public class Usuario implements UserDetails {
     public void desativar() {
         this.ativo = false;
     }
+
+    public void adicionarPerfil(Perfil perfil) {
+        this.perfis.add(perfil);
+    }
 }
