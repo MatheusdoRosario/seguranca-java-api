@@ -4,10 +4,9 @@ import br.com.forum_hub.domain.topico.Status;
 import br.com.forum_hub.domain.topico.TopicoService;
 import br.com.forum_hub.domain.usuario.Usuario;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
+import br.com.forum_hub.infra.security.HierarquiaService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,10 +16,12 @@ public class RespostaService {
 
     @Autowired
     private RespostaRepository repository;
+
     @Autowired
     private TopicoService topicoService;
+
     @Autowired
-    private RoleHierarchy roleHierarchy;
+    private HierarquiaService hierarquiaService;
 
     @Transactional
     public Resposta cadastrar(DadosCadastroResposta dados, Long idTopico, Usuario autor) {
@@ -56,7 +57,7 @@ public class RespostaService {
 
         var topico = resposta.getTopico();
 
-        if (!usuarioTemPermissoes(logado, topico.getAutor())) {
+        if (hierarquiaService.usuarioNaoTemPermissoes(logado, topico.getAutor(), "ROLE_INSTRUTOR")) {
             throw new RegraDeNegocioException("Você não pode marcar essa resposta como solução!");
         }
 
@@ -84,18 +85,5 @@ public class RespostaService {
     public Resposta buscarPeloId(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RegraDeNegocioException("Resposta não encontrada!"));
-    }
-
-    private boolean usuarioTemPermissoes(Usuario logado, Usuario autor) {
-        for(GrantedAuthority autoridade: logado.getAuthorities()) {
-            var autoridadesAlcancaveis = roleHierarchy.getReachableGrantedAuthorities(List.of(autoridade));
-
-            for (GrantedAuthority perfil: autoridadesAlcancaveis) {
-                if (perfil.getAuthority().equals("ROLE_INSTRUTOR") || logado.getId().equals(autor.getId())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }
