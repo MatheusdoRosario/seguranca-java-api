@@ -1,7 +1,6 @@
 package br.com.forum_hub.domain.usuario;
 
 import br.com.forum_hub.domain.perfil.Perfil;
-import br.com.forum_hub.domain.perfil.PerfilNome;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -131,5 +130,9 @@ public class Usuario implements UserDetails {
 
     public void adicionarPerfil(Perfil perfil) {
         this.perfis.add(perfil);
+    }
+
+    public void removerPerfil(Perfil perfil) {
+        this.perfis.remove(perfil);
     }
 }
