@@ -1,5 +1,7 @@
 package br.com.forum_hub.domain.usuario;
 
+import br.com.forum_hub.domain.perfil.PerfilNome;
+import br.com.forum_hub.domain.perfil.PerfilRepository;
 import br.com.forum_hub.infra.email.EmailService;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.validation.Valid;
@@ -18,6 +20,9 @@ public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PerfilRepository perfilRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -44,7 +49,9 @@ public class UsuarioService implements UserDetailsService {
         }
 
         var senhaCriptografa = passwordEncoder.encode(dados.senha());
-        var usuario = new Usuario(dados, senhaCriptografa);
+
+        var perfil = perfilRepository.findByNome(PerfilNome.ESTUDANTE);
+        var usuario = new Usuario(dados, senhaCriptografa,  perfil);
 
         emailService.enviarEmailVerificacao(usuario);
         return usuarioRepository.save(usuario);
