@@ -5,19 +5,22 @@ import br.com.forum_hub.domain.topico.TopicoService;
 import br.com.forum_hub.domain.usuario.Usuario;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class RespostaService {
-    private final RespostaRepository repository;
-    private final TopicoService topicoService;
 
-    public RespostaService(RespostaRepository repository, TopicoService topicoService) {
-        this.repository = repository;
-        this.topicoService = topicoService;
-    }
+    @Autowired
+    private RespostaRepository repository;
+    @Autowired
+    private TopicoService topicoService;
+    @Autowired
+    private RoleHierarchy roleHierarchy;
 
     @Transactional
     public Resposta cadastrar(DadosCadastroResposta dados, Long idTopico, Usuario autor) {
@@ -48,11 +51,16 @@ public class RespostaService {
     }
 
     @Transactional
-    public Resposta marcarComoSolucao(Long id) {
+    public Resposta marcarComoSolucao(Long id, Usuario logado) {
         var resposta = buscarPeloId(id);
 
         var topico = resposta.getTopico();
-        if(topico.getStatus() == Status.RESOLVIDO)
+
+        if (!usuarioTemPermissoes(logado, topico.getAutor())) {
+            throw new RegraDeNegocioException("Você não pode marcar essa resposta como solução!");
+        }
+
+        if (topico.getStatus() == Status.RESOLVIDO)
             throw new RegraDeNegocioException("O tópico já foi solucionado! Você não pode marcar mais de uma resposta como solução.");
 
         topico.alterarStatus(Status.RESOLVIDO);
@@ -68,13 +76,26 @@ public class RespostaService {
 
         topico.decrementarRespostas();
         if (topico.getQuantidadeRespostas() == 0)
-            topico.alterarStatus(Status.NAO_RESPONDIDO);
+        topico.alterarStatus(Status.NAO_RESPONDIDO);
         else if(resposta.ehSolucao())
-            topico.alterarStatus(Status.RESPONDIDO);
+        topico.alterarStatus(Status.RESPONDIDO);
     }
 
     public Resposta buscarPeloId(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RegraDeNegocioException("Resposta não encontrada!"));
+    }
+
+    private boolean usuarioTemPermissoes(Usuario logado, Usuario autor) {
+        for(GrantedAuthority autoridade: logado.getAuthorities()) {
+            var autoridadesAlcancaveis = roleHierarchy.getReachableGrantedAuthorities(List.of(autoridade));
+
+            for (GrantedAuthority perfil: autoridadesAlcancaveis) {
+                if (perfil.getAuthority().equals("ROLE_INSTRUTOR") || logado.getId().equals(autor.getId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
