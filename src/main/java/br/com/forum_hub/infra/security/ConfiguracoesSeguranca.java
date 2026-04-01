@@ -41,6 +41,7 @@ public class ConfiguracoesSeguranca {
 
                             req.requestMatchers(HttpMethod.PATCH, "/adicionar-perfil/**").hasRole("ADMIN");
                             req.requestMatchers(HttpMethod.PATCH, "/remover-perfil/**").hasRole("ADMIN");
+                            req.requestMatchers(HttpMethod.PATCH, "/reativar-perfil/**").hasRole("ADMIN");
 
                             req.anyRequest().authenticated();
                         }

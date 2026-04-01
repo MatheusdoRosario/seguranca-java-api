@@ -47,8 +47,8 @@ public class UsuarioController {
     }
 
     @DeleteMapping("/desativar")
-    public ResponseEntity<Void> banirUsuario(@AuthenticationPrincipal Usuario logado) {
-        service.desativarUsuario(logado);
+    public ResponseEntity<Void> banirUsuario(@PathVariable Long id, @AuthenticationPrincipal Usuario logado) {
+        service.desativarUsuario(id, logado);
         return ResponseEntity.noContent().build();
     }
 
@@ -62,5 +62,11 @@ public class UsuarioController {
     public ResponseEntity<DadosListagemUsuario> removerPerfil(@PathVariable Long id, @RequestBody @Valid DadosPerfil dados) {
         var usuario = service.removerPerfil(id, dados);
         return ResponseEntity.ok(new DadosListagemUsuario(usuario));
+    }
+
+    @PatchMapping("/reativar-perfil/{id}")
+    public ResponseEntity<Void> reativarPerfil(@PathVariable Long id) {
+        service.reativarUsuario(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -5,7 +5,7 @@ import br.com.forum_hub.domain.perfil.PerfilNome;
 import br.com.forum_hub.domain.perfil.PerfilRepository;
 import br.com.forum_hub.infra.email.EmailService;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
-import jakarta.validation.Valid;
+import br.com.forum_hub.infra.security.HierarquiaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,6 +30,9 @@ public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private HierarquiaService hierarquiaService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -90,8 +93,12 @@ public class UsuarioService implements UserDetailsService {
     }
 
     @Transactional
-    public void desativarUsuario(Usuario logado) {
-        logado.desativar();
+    public void desativarUsuario(Long id, Usuario logado) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+        if (hierarquiaService.usuarioNaoTemPermissoes(logado, usuario, "ROLE_ADMIN")) {
+            throw new RegraDeNegocioException("Você não tem permissão realizar essa operação!");
+        }
+        usuario.desativar();
     }
 
     @Transactional
@@ -108,5 +115,11 @@ public class UsuarioService implements UserDetailsService {
         var perfil = perfilRepository.findByNome(dados.perfilNome());
         usuario.removerPerfil(perfil);
         return usuario;
+    }
+
+    @Transactional
+    public void reativarUsuario(Long id) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+        usuario.reativar();
     }
 }
