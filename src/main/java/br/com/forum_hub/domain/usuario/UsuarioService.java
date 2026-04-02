@@ -53,10 +53,7 @@ public class UsuarioService implements UserDetailsService {
             throw new RegraDeNegocioException("Senha não bate com a confirmação!");
         }
 
-        var senhaCriptografa = passwordEncoder.encode(dados.senha());
-
-        var perfil = perfilRepository.findByNome(PerfilNome.ESTUDANTE);
-        var usuario = new Usuario(dados, senhaCriptografa,  perfil);
+        var usuario = criarUsuario(dados, false);
 
         emailService.enviarEmailVerificacao(usuario);
         return usuarioRepository.save(usuario);
@@ -122,5 +119,30 @@ public class UsuarioService implements UserDetailsService {
     public void reativarUsuario(Long id) {
         var usuario = usuarioRepository.findById(id).orElseThrow();
         usuario.reativar();
+    }
+
+    @Transactional
+    public Usuario cadastrarVerificado(DadosCadastroUsuario dados) {
+        Optional<Usuario> optionalUsuario = usuarioRepository.findByEmailIgnoreCaseOrNomeUsuarioIgnoreCase(dados.email(), dados.nomeUsuario());
+
+        if (optionalUsuario.isPresent()) {
+            throw new RegraDeNegocioException("Já existe uma conta cadastrada com esse email ou nome de usuário!");
+        }
+
+        if (!dados.senha().equals(dados.confirmacaoSenha())) {
+            throw new RegraDeNegocioException("Senha não bate com a confirmação!");
+        }
+
+        var usuario = criarUsuario(dados, true);
+
+        return usuarioRepository.save(usuario);
+    }
+
+    private Usuario criarUsuario(DadosCadastroUsuario dados, Boolean verificado) {
+
+        var senhaCriptografada = passwordEncoder.encode(dados.senha());
+        var perfil = perfilRepository.findByNome(PerfilNome.ESTUDANTE);
+
+        return new Usuario(dados, senhaCriptografada, perfil, verificado);
     }
 }
