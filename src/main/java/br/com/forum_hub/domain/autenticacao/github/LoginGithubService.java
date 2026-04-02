@@ -12,8 +12,8 @@ import java.util.UUID;
 @Service
 public class LoginGithubService {
 
-    private final String clienteId = "Ov23liuoIK84HT7BwsB0";
-    private final String clientSecret = "96595014577ff5185f9c79733456be73f2742c24";
+    private final String clienteId = "${GITHUB_CLIENT_ID}";
+    private final String clientSecret = "${GITHUB_CLIENT_SECRET}";
     private final String redirect_uri = "http://localhost:8080/login/github/autorizado";
     private final String redirectUriRegistro = "http://localhost:8080/login/github/registro-autorizado";
     private final RestClient restClient;
