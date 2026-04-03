@@ -1,6 +1,7 @@
 package br.com.forum_hub.domain.autenticacao.github;
 
 import br.com.forum_hub.domain.usuario.DadosCadastroUsuario;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -12,8 +13,10 @@ import java.util.UUID;
 @Service
 public class LoginGithubService {
 
-    private final String clienteId = "${GITHUB_CLIENT_ID}";
-    private final String clientSecret = "${GITHUB_CLIENT_SECRET}";
+    @Value("github.oauth.clienteId")
+    private String clienteId;
+    @Value("github.oauth.clientSecret")
+    private String clientSecret;
     private final String redirect_uri = "http://localhost:8080/login/github/autorizado";
     private final String redirectUriRegistro = "http://localhost:8080/login/github/registro-autorizado";
     private final RestClient restClient;
