@@ -66,36 +66,40 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getPassword() {
-        return senha;
+        return this.senha;
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return this.email;
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public String getNomeCompleto() {
-        return nomeCompleto;
+        return this.nomeCompleto;
     }
 
     public String getNomeUsuario() {
-        return nomeUsuario;
+        return this.nomeUsuario;
     }
 
     public String getBiografia() {
-        return biografia;
+        return this.biografia;
     }
 
     public String getMiniBiografia() {
-        return miniBiografia;
+        return this.miniBiografia;
     }
 
     public String getToken() {
-        return token;
+        return this.token;
+    }
+
+    public String getSecret() {
+        return this.secret;
     }
 
     @Override
@@ -148,5 +152,9 @@ public class Usuario implements UserDetails {
         this.ativo = true;
         this.token = null;
         this.expiracaoToken = null;
+    }
+
+    public void gerarSecret(String secret) {
+        this.secret = secret;
     }
 }
