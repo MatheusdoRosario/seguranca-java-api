@@ -4,7 +4,8 @@ import br.com.forum_hub.domain.autenticacao.DadosToken;
 import br.com.forum_hub.domain.autenticacao.TokenService;
 import br.com.forum_hub.domain.autenticacao.google.LoginGoogleService;
 import br.com.forum_hub.domain.usuario.Usuario;
-import br.com.forum_hub.domain.usuario.UsuarioService;
+import br.com.forum_hub.domain.usuario.service.RegistroService;
+import br.com.forum_hub.domain.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,9 @@ public class LoginGoogleController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private RegistroService registroService;
 
     @Autowired
     private TokenService tokenService;
@@ -66,7 +70,7 @@ public class LoginGoogleController {
     @GetMapping("/registro-autorizado")
     public ResponseEntity<DadosToken> registrarOAuth(@RequestParam String code) {
         var dadosUsuario = loginGoogleService.obterDadosOAuth(code);
-        var usuario = usuarioService.cadastrarVerificado(dadosUsuario);
+        var usuario = registroService.cadastrarVerificado(dadosUsuario);
 
         var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);

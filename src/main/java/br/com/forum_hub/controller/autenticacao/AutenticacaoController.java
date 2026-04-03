@@ -1,4 +1,4 @@
-package br.com.forum_hub.controller;
+package br.com.forum_hub.controller.autenticacao;
 
 import br.com.forum_hub.domain.autenticacao.DadosLogin;
 import br.com.forum_hub.domain.autenticacao.DadosRefreshToken;

@@ -1,12 +1,10 @@
-package br.com.forum_hub.domain.usuario;
+package br.com.forum_hub.domain.usuario.service;
 
 import br.com.forum_hub.domain.perfil.DadosPerfil;
-import br.com.forum_hub.domain.perfil.PerfilNome;
 import br.com.forum_hub.domain.perfil.PerfilRepository;
-import br.com.forum_hub.infra.email.EmailService;
+import br.com.forum_hub.domain.usuario.*;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import br.com.forum_hub.infra.security.HierarquiaService;
-import br.com.forum_hub.infra.security.totp.TotpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,8 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 public class UsuarioService implements UserDetailsService {
@@ -31,42 +27,12 @@ public class UsuarioService implements UserDetailsService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
     private HierarquiaService hierarquiaService;
-
-    @Autowired
-    private TotpService totpService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return usuarioRepository.findByEmailIgnoreCaseAndVerificadoTrue(username)
                 .orElseThrow(() -> new UsernameNotFoundException("O usuário não foi encontrado!"));
-    }
-
-    @Transactional
-    public Usuario cadastrar(DadosCadastroUsuario dados) {
-        Optional<Usuario> optionalUsuario = usuarioRepository.findByEmailIgnoreCaseOrNomeUsuarioIgnoreCase(dados.email(), dados.nomeUsuario());
-
-        if (optionalUsuario.isPresent()) {
-            throw new RegraDeNegocioException("Já existe uma conta cadastrada com esse email ou nome de usuário!");
-        }
-
-        if (!dados.senha().equals(dados.confirmacaoSenha())) {
-            throw new RegraDeNegocioException("Senha não bate com a confirmação!");
-        }
-
-        var usuario = criarUsuario(dados, false);
-
-        emailService.enviarEmailVerificacao(usuario);
-        return usuarioRepository.save(usuario);
-    }
-
-    @Transactional
-    public void verificarEmail(String codigo) {
-        var usuario = usuarioRepository.findByToken(codigo).orElseThrow();
-        usuario.verificar();
     }
 
     public DadosListagemUsuario listarPorNomeUsuario(String nomeUsuario) {
@@ -123,40 +89,5 @@ public class UsuarioService implements UserDetailsService {
     public void reativarUsuario(Long id) {
         var usuario = usuarioRepository.findById(id).orElseThrow();
         usuario.reativar();
-    }
-
-    @Transactional
-    public Usuario cadastrarVerificado(DadosCadastroUsuario dados) {
-        Optional<Usuario> optionalUsuario = usuarioRepository.findByEmailIgnoreCaseOrNomeUsuarioIgnoreCase(dados.email(), dados.nomeUsuario());
-
-        if (optionalUsuario.isPresent()) {
-            throw new RegraDeNegocioException("Já existe uma conta cadastrada com esse email ou nome de usuário!");
-        }
-
-        if (!dados.senha().equals(dados.confirmacaoSenha())) {
-            throw new RegraDeNegocioException("Senha não bate com a confirmação!");
-        }
-
-        var usuario = criarUsuario(dados, true);
-
-        return usuarioRepository.save(usuario);
-    }
-
-    @Transactional
-    private Usuario criarUsuario(DadosCadastroUsuario dados, Boolean verificado) {
-
-        var senhaCriptografada = passwordEncoder.encode(dados.senha());
-        var perfil = perfilRepository.findByNome(PerfilNome.ESTUDANTE);
-
-        return new Usuario(dados, senhaCriptografada, perfil, verificado);
-    }
-
-    @Transactional
-    public String gerarQrCode(Usuario logado) {
-        var secret = totpService.gerarSecret();
-        logado.gerarSecret(secret);
-        usuarioRepository.save(logado);
-
-        return totpService.gerarQrCode(logado);
     }
 }

@@ -157,4 +157,8 @@ public class Usuario implements UserDetails {
     public void gerarSecret(String secret) {
         this.secret = secret;
     }
+
+    public boolean isA2fAtiva() {
+        return this.a2fAtiva;
+    }
 }
