@@ -5,6 +5,7 @@ import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -53,4 +54,13 @@ public class EmailService {
     private String gerarConteudoEmail(String template, String nome, String url) {
         return template.replace("[[name]]", nome).replace("[[URL]]", url);
     }
+
+    public void enviarCodigoAutenticacaoEmail(String email, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Código de autenticação");
+        message.setText("Seu código é: " + code);
+        enviadorEmail.send(message);
+    }
+
 }

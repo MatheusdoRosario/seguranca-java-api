@@ -1,5 +1,6 @@
 package br.com.forum_hub.domain.usuario;
 
+import br.com.forum_hub.domain.autenticacao.MetodosA2F;
 import br.com.forum_hub.domain.perfil.Perfil;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.persistence.*;
@@ -29,6 +30,12 @@ public class Usuario implements UserDetails {
     private String token;
     private LocalDateTime expiracaoToken;
     private Boolean ativo;
+    private String secret;
+    @Enumerated(value = EnumType.STRING)
+    private MetodosA2F metodosA2F;
+    private String emailCode;
+    private LocalDateTime emailCodeExpiracao;
+    private int tentativasA2F;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuarios_perfis",
@@ -55,6 +62,7 @@ public class Usuario implements UserDetails {
             this.ativo = false;
         }
         this.perfis.add(perfil);
+        this.tentativasA2F = 0;
     }
 
     @Override
@@ -64,36 +72,52 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getPassword() {
-        return senha;
+        return this.senha;
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return this.email;
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public String getNomeCompleto() {
-        return nomeCompleto;
+        return this.nomeCompleto;
     }
 
     public String getNomeUsuario() {
-        return nomeUsuario;
+        return this.nomeUsuario;
     }
 
     public String getBiografia() {
-        return biografia;
+        return this.biografia;
     }
 
     public String getMiniBiografia() {
-        return miniBiografia;
+        return this.miniBiografia;
     }
 
     public String getToken() {
-        return token;
+        return this.token;
+    }
+
+    public String getSecret() {
+        return this.secret;
+    }
+
+    public String getEmailCode() {
+        return emailCode;
+    }
+
+    public LocalDateTime getEmailCodeExpiracao() {
+        return emailCodeExpiracao;
+    }
+
+    public int getTentativasA2F() {
+        return tentativasA2F;
     }
 
     @Override
@@ -146,5 +170,29 @@ public class Usuario implements UserDetails {
         this.ativo = true;
         this.token = null;
         this.expiracaoToken = null;
+    }
+
+    public void gerarSecret(String secret) {
+        this.secret = secret;
+    }
+
+    public MetodosA2F getMetodosA2F() {
+        return this.metodosA2F;
+    }
+
+    public void ativarA2f(MetodosA2F metodo) {
+        this.metodosA2F = metodo;
+    }
+
+    public void setEmailCode(String emailCode) {
+        this.emailCode = emailCode;
+    }
+
+    public void setEmailCodeExpiracao(LocalDateTime emailCodeExpiracao) {
+        this.emailCodeExpiracao = emailCodeExpiracao;
+    }
+
+    public void setTentativasA2F(int tentativasA2F) {
+        this.tentativasA2F = tentativasA2F;
     }
 }
