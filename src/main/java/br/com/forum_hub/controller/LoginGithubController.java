@@ -1,6 +1,7 @@
 package br.com.forum_hub.controller;
 
 import br.com.forum_hub.domain.autenticacao.DadosToken;
+import br.com.forum_hub.domain.autenticacao.MetodosA2F;
 import br.com.forum_hub.domain.autenticacao.TokenService;
 import br.com.forum_hub.domain.autenticacao.github.LoginGithubService;
 import br.com.forum_hub.domain.usuario.Usuario;
@@ -55,7 +56,7 @@ public class LoginGithubController {
         String tokenAcesso = tokenService.gerarToken((Usuario) authentication.getPrincipal());
         String refreshToken = tokenService.gerarRefreshToken((Usuario) authentication.getPrincipal());
 
-        return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshToken, false));
+        return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshToken, MetodosA2F.APP));
     }
 
     @GetMapping("/registro")
@@ -78,6 +79,6 @@ public class LoginGithubController {
         String tokenAcesso = tokenService.gerarToken(usuario);
         String refreshToken = tokenService.gerarRefreshToken(usuario);
 
-        return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshToken, false));
+        return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshToken, MetodosA2F.APP));
     }
 }

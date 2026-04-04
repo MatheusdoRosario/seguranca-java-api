@@ -1,0 +1,3 @@
+ALTER TABLE usuarios
+DROP COLUMN a2f_ativa,
+ADD COLUMN metodos_a2f ENUM('APP', 'EMAIL') DEFAULT 'APP' NULL;
